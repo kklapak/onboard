@@ -1,0 +1,25 @@
+/* Style the outer columns */
+.outer {
+  padding: 20px;
+  height: 100%;
+}
+
+/* Style the middle column */
+.middle {
+  padding: 20px;
+  height: 100%;
+}
+
+/* Style the inner column */
+.inner {
+  padding: 20px;
+  height: 100%;
+}
+
+textarea {
+    white-space: pre-wrap;
+  }
+
+#message {
+  margin-top: 4em !important;
+}

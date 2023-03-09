@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Jira Onboard Creator</title>
+  </head>
+  <body>
+    {% if success %}
+      <h1>Issue created successfully!</h1>
+    {% else %}
+      <h1>Failed to create issue.</h1>
+      <p>Error message:</p>
+      <pre>{{error}}</pre>
+    {% endif %}
+  </body>
+</html>

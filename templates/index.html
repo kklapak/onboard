@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jira Onboard Creator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script src="/static/js/app.js"></script>
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+<div class="container-fluid h-100">
+    <div class="row h-100">
+        <div class="col-sm-3 inner">
+            <div class="container">
+                <h1>User Credentials</h1>
+                <form>
+                    <div class="form-group">
+                        <label for="token">Jira API Token:</label>
+                        <input type="text" class="form-control" id="token" name="token">
+                    </div>
+                    <div class="form-group">
+                        <label for="cf_auth">CF_Authorization Token</label>
+                        <textarea style="height:410px !important" type="cf_auth" class="form-control" id="cf_auth" name="auth"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div id="message">
+            {{message}}
+            </div>
+        </div>
+        <div class="col-sm-6 middle">
+            <div class="container">
+                <h1>Onboard Jira EPIC</h1>
+                <div id="search" class="form-group">
+                    <label for="search-bar">Lookup ONBOARD Jira:</label>
+                    <p id="loading" for="search-bar">Loading...</p>
+                    <select class="form-control" id="search-bar" style="display:None">
+                    </select>
+                </div>
+                <form id="create_epic" method="POST">
+                    <input type="hidden" id="epic_id" name="epic_id" value="">
+                    <input type="hidden" id="submit-action" name="submit-action" value="">
+
+                    <div class="form-group">
+                        <label for="customer">Customer Name:</label>
+                        <input type="text" class="form-control" id="customer" name="customer">
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <textarea style="height:150px" class="form-control" id="description" name="description">Description:
+
+Salesforce Link:
+
+Products:
+</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="salesforce">Salesforce ID:</label>
+                        <input type="text" class="form-control" id="salesforce" name="salesforce">
+                    </div>
+                    <div class="form-group">
+                        <label for="opportunity">Opportunity ID:</label>
+                        <input type="text" class="form-control" id="opportunity" name="opportunity">
+                    </div>
+                    <div class="form-group">
+                        <label for="region">Region:</label>
+                        <select id="region" name="region" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example">
+                            <option selected>Select Region</option>
+                            <option value="EMEA">EMEA</option>
+                            <option value="APAC">APAC</option>
+                            <option value="AMER">AMER</option>
+                            <option value="Global">Global</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="start_date">Start Date:</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date">
+                    </div>
+                    <div class="form-group">
+                        <label for="products">Products Purchased:</label>
+                        <div id="product-list" class="row">
+                            <div id="product-list-1" class="col">
+                                <!-- JavaScript will add products dynamically here -->
+                            </div>
+                            <div id="product-list-2" class="col">
+                                <!-- JavaScript will add products dynamically here -->
+                            </div>
+                        </div>
+                    </div>
+                    <button id="submit" type="submit" class="btn btn-primary" name="create" value="create">Create
+                    </button>
+                    <button id="update" style="display:None" type="submit" class="btn btn-secondary" name="update"
+                            value="update">
+                        Update
+                    </button>
+                </form>
+            </div>
+        </div>
+        <div class="col-sm-3 outter">
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+
+
