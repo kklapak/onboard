@@ -42,6 +42,9 @@ $(document).ready(() => {
 
   const searchCall = () => {
     const selectedValue = $("#search-bar").val();
+    if (selectedValue !== ''){
+        $('#message').html('<p><strong>Epic Link:</strong><a href="https://jira.cfdata.org/browse/' + selectedValue + '" target="_blank">'+ selectedValue +'</a>');
+    }
     if (selectedValue) {
       if (selectedValue !== ''){
           console.log('Sending POST request...');

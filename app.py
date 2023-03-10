@@ -258,9 +258,9 @@ def form_processing():
 
         if len(selected_products) > 0:
             issue_keys = []
-            response = create_child_issues(cf_auth,token,epic_id, epic["customer"], epic["salesforce"], epic["opportunity"], epic["start_date"], epic["region"], selected_products, issue_keys)
+            response = create_child_issues(cf_auth,token,epic_id, epic["customer"], epic["salesforce"], epic["opportunity"], epic["start_date"], epic["region"], selected_products)
         print("END UPDATE")
-        return jsonify(response)
+        return response
     else:
         return render_template('index.html', debug=DEBUG)
 

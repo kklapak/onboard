@@ -21,5 +21,11 @@ textarea {
   }
 
 #message {
-  margin-top: 4em !important;
+  font-size: 2em;
+  margin-top: 2em !important;
+  padding-left: 50px !important;
+}
+
+#message a {
+  padding: 20px !important;
 }
