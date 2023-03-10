@@ -17,7 +17,7 @@ $(document).ready(() => {
     $('#cf_auth').val(cf_auth);
   }
 
-  $('#token').on('keydown', function(){
+  $('#token').blur(function(){
       $(".select2-container").hide();
       $("#loading").show();
       token = $('#token').val()
@@ -26,7 +26,7 @@ $(document).ready(() => {
       localStorage.setItem('token', $('#token').val())
   });
 
-  $('#cf_auth').on('keydown', function(){
+  $('#cf_auth').blur(function(){
       $(".select2-container").hide();
       $("#loading").show();
       cf_auth = $('#cf_auth').val()
@@ -156,10 +156,17 @@ function get_onboard_jiras(token,cf_auth){
     async: false,
     dataType: 'json',
     success: (data) => {
+      console.log(data)
+      if (data["user"] !== undefined){
+          $("#user").text("User: " + data["user"]["key"])
+      }
+      else{
+         $("#user").text("User: ")
+      }
       $('#search-bar').empty();
       $('#search-bar').append('<option value="">Create New</option>')
-      if (data["error"] === undefined) {
-          data.forEach(({ key, summary }) => {
+      if (data["epics"] !== undefined) {
+          data["epics"].forEach(({ key, summary }) => {
             const optionText = `(${key}) ${summary}`;
             $('#search-bar').append($('<option>', { text: optionText, value: key }));
           });
@@ -170,6 +177,7 @@ function get_onboard_jiras(token,cf_auth){
           $(".select2-container").hide();
           $("button[id='submit']").hide();
           $("button[id='update']").hide();
+          $("#user").text(data.error)
           $("#loading").text(data.error)
           $("#loading").show();
       }

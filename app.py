@@ -23,6 +23,8 @@ products = ["Access", "Analytics", "API Gateway", "Area 1", "Argo", "Bot Managem
             "Website Optimization Services",
             "Workers", "Workers KV", "Zaraz", "Zero Trust"]
 
+
+
 def convert_custom_fields(fields):
     custom_fields = {'sales_force_id':'customfield_20323',
                 'op_id':'customfield_20324',
@@ -46,11 +48,19 @@ def make_request(cf_auth, token, method, url, payload=None, query=False):
     if not DEBUG or query:
         try:
             response = requests.request(method, url, cookies=COOKIES, headers=HEADERS, json=payload)
-            return response
+            if "Cloudflare Access</title>" not in response.text and not "errorMessages" in response.text:
+                print('The request was successful.')
+                print(response.text)
+                if response.status_code == 200:
+                    return response.json()
+            elif "errorMessages" in response.text and "anonymous users" in response.text:
+                print('The request failed')
+                return {"error": "The request failed.Please try entering your Jira API Token"}
+            else:
+                print('The request failed to pass Access.')
+                return {"error":"Could not pass Access. Please check CF_Auth token"}
         except requests.exceptions.RequestException as e:
-            print(f'Request failed: {e}')
-            print(f'Request payload: {payload}')
-            return jsonify(e)
+            return {"error":[e]}
     else:
         print("Printing Payload instead of making REST request")
         data = {
@@ -61,10 +71,13 @@ def make_request(cf_auth, token, method, url, payload=None, query=False):
         }
         return jsonify(data)
 
+def get_current_user(cf_auth, token):
+    url = 'https://jira.cfdata.org/rest/api/2/myself'
+    return make_request(cf_auth, token, 'GET', url,True)
+
 def create_issue(cf_auth, token,payload):
     url = app.config['JIRA_URL'] + '/rest/api/2/issue/'
-    response = make_request(cf_auth, token, 'POST', url, payload, False)
-    return response.json()
+    return make_request(cf_auth, token, 'POST', url, payload, False)
 
 def link_issues(cf_auth, token,epic_key, payload):
     url = app.config['JIRA_URL'] + f'/rest/agile/1.0/epic/{epic_key}/issue'
@@ -96,8 +109,7 @@ def jira_query(cf_auth, token,jql):
         "startAt": 0,
         "maxResults": 50
     }
-    response = make_request(cf_auth, token,'POST', url, payload, query=True)
-    return response
+    return make_request(cf_auth, token,'POST', url, payload, query=True)
 
 def create_child_issues(cf_auth, token,epic_id, customer, sales_force_id, op_id, start_date, region, selected_products):
     issue_keys = []
@@ -115,7 +127,6 @@ def create_child_issues(cf_auth, token,epic_id, customer, sales_force_id, op_id,
                 'customfield_18408': {"value": region}
             }
         })
-        print(issue)
         if issue["key"]:
             issue_keys.append(issue["key"])
     print("Children created:" + str(issue_keys))
@@ -133,14 +144,16 @@ def get_epics_for_project(project_key="Onboard"):
     if(token is not None):
         jql = f"project={project_key} and issuetype=Epic"
         response = jira_query(cf_auth,token,jql)
-        if response.status_code == 200:
-            if("CF_Authorization=deleted;" not in response.headers.get('Set-Cookie')):
-                response_data = response.json()
+        if "error" not in response:
+                user = get_current_user(cf_auth, token)
+                print("User " + str(user))
+                response_data = response
                 issues = response_data.get("issues")
                 epics = [{"key": issue["key"], "summary": issue["fields"]["summary"]} for issue in issues]
-                return jsonify(epics)
-            else:
-                return {"error": "Update your CF_Authorization token in app.py"}
+                print({"epics":epics,"user":user})
+                return jsonify({"epics":epics,"user":user})
+        else:
+            return {"error": response["error"]}
     print(f"Error retrieving Epics for project {project_key}")
     return {"error": "Update your CF_Authorization token in app.py"}
 
@@ -152,9 +165,8 @@ def lookup(cf_auth=None,token=None,jira_id=None):
     cf_auth = request.form.get('cf_auth', default=cf_auth)
     token = request.form.get('token', default=token)
 
-    epic = get_issue(cf_auth,token,lookup).json()
-    linked = get_epic(cf_auth,token,lookup).json()
-    #print(linked)
+    epic = get_issue(cf_auth,token,lookup)
+    linked = get_epic(cf_auth,token,lookup)
 
     products = []
     start_date = None
