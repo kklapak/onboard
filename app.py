@@ -50,7 +50,6 @@ def make_request(cf_auth, token, method, url, payload=None, query=False):
             response = requests.request(method, url, cookies=COOKIES, headers=HEADERS, json=payload)
             if "Cloudflare Access</title>" not in response.text and not "errorMessages" in response.text:
                 print('The request was successful.')
-                print(response.text)
                 if response.status_code == 200:
                     return response.json()
             elif "errorMessages" in response.text and "anonymous users" in response.text:
@@ -146,11 +145,9 @@ def get_epics_for_project(project_key="Onboard"):
         response = jira_query(cf_auth,token,jql)
         if "error" not in response:
                 user = get_current_user(cf_auth, token)
-                print("User " + str(user))
                 response_data = response
                 issues = response_data.get("issues")
                 epics = [{"key": issue["key"], "summary": issue["fields"]["summary"]} for issue in issues]
-                print({"epics":epics,"user":user})
                 return jsonify({"epics":epics,"user":user})
         else:
             return {"error": response["error"]}
@@ -223,7 +220,6 @@ def form_processing():
             return jsonify(epic)
         else:
             epic_id = None or epic["key"]
-            print(epic_id)
 
             if not epic_id:
                 return jsonify(epic)

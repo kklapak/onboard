@@ -18,6 +18,7 @@ $(document).ready(() => {
   }
 
   $('#token').blur(function(){
+      $("#overlay").fadeIn()
       $(".select2-container").hide();
       $("#loading").show();
       token = $('#token').val()
@@ -27,6 +28,7 @@ $(document).ready(() => {
   });
 
   $('#cf_auth').blur(function(){
+      $("#overlay").fadeIn()
       $(".select2-container").hide();
       $("#loading").show();
       cf_auth = $('#cf_auth').val()
@@ -48,6 +50,7 @@ $(document).ready(() => {
     if (selectedValue) {
       if (selectedValue !== ''){
           console.log('Sending POST request...');
+          $("#overlay").fadeIn()
           $.ajax({
             url: '/lookup_jira',
             type: 'POST',
@@ -56,6 +59,7 @@ $(document).ready(() => {
             success: function(data) {
               console.log(data)
               updateForm(data)
+              $("#overlay").fadeOut()
               console.log("Sent data")
             }
           });
@@ -114,6 +118,7 @@ $(document).ready(() => {
 
         $(this).find(':input').prop('disabled', true);
         console.log('Sending POST request...');
+        $("#overlay").fadeIn()
           $.ajax({
             url: '/',
             type: 'POST',
@@ -136,19 +141,21 @@ $(document).ready(() => {
               } else{
                 message.text("Error: " + JSON.stringify(response["errors"]));
               }
+              $("#overlay").fadeOut()
             },
             error: function(xhr, textStatus, errorThrown) {
                 $('#create_epic').find(':input').prop('disabled', false);
+                $("#overlay").fadeOut()
                 console.error('Error:', xhr.responseText);
             }
           });
-
       });
 
 });
 
 function get_onboard_jiras(token,cf_auth){
   console.log("Grabbing ONBOARD Epics")
+  $("#overlay").fadeIn()
   $.ajax({
     url: '/get-onboards',
     type: 'POST',
@@ -181,6 +188,7 @@ function get_onboard_jiras(token,cf_auth){
           $("#loading").text(data.error)
           $("#loading").show();
       }
+      $("#overlay").fadeOut()
     },
   });
 }
@@ -286,3 +294,16 @@ function addProductCheckboxes(){
 
     }
 }
+
+function animateDots() {
+  var dots = $('.dots');
+  setInterval(function() {
+    dots.each(function() {
+      $(this).text($(this).text() + '.');
+      if ($(this).text().length > 3) {
+        $(this).text('.');
+      }
+    });
+  }, 500);
+}
+animateDots();
