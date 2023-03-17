@@ -53,8 +53,16 @@ $(function() {
                     cf_auth
                 },
                 dataType: 'json',
-                success: function (){
-                  $("#message").empty();
+                success: function (data){
+                  if(data.error === undefined){
+                    $('#submit').show();
+                  }
+                  else{
+                    $("#message").val(JSON.stringify(data));
+                    $('#submit').hide();
+                    $('#update').hide();
+                  }
+                  console.log(data)
                 }
             });
 
@@ -280,8 +288,9 @@ $(function() {
         });
 
         // Handle submit button click
-        $('button[type="submit"]').click(() => {
+        $('button[type="submit"]').click(function () {
             // Set the value of the clicked button in a hidden input field
+            console.log($(this).attr('name'));
             $('#submit-action').val($(this).attr('name'));
         });
 
@@ -318,30 +327,26 @@ $(function() {
                 type: 'POST',
                 data: formData,
                 dataType: 'json',
-                success: (response) => {
+                success: function(response){
                     console.log(response);
                     $('#create_epic').find(':input').prop('disabled', false);
-                    if (response.errors === undefined) {
-                        $('#message')
-                            .text('Issue created successfully')
-                            .removeClass('error')
-                            .addClass('success')
-                            .show();
-                    } else if (response.status === 'success') {
+                    if (response.status === 'success') {
                         getOnboardJiras();
-                        const {
-                            epic_id,
-                            projects,
-                            status
-                        } = response;
-                        $('#message').html('<p><strong>Epic ID:</strong><a href="https://jira.cfdata.org/browse/' + response.epic_id + '" target="_blank">'+ response.epic_id +'</a>');
-                        $('#message').append('<p><strong>Projects:</strong> ' + response.projects.join(', ') + '</p>');
-                        $('#message').append('<p><strong>Status:</strong> ' + response.status + '</p>');
-                        $('#message').removeClass('error').addClass('success').show();
-                        searchbar.val(epic_id);
-                        searchbar.trigger('change');
+                        var epic_id = response.epic_id;
+                        var projects = response.projects;
+                        var status = response.status;
+                        setTimeout(() => {
+                          $('#message').html('<p><strong>Epic ID:</strong><a href="https://jira.cfdata.org/browse/' + epic_id + '" target="_blank">'+ epic_id +'</a></p>');
+                          $('#message').append('<p><strong>Projects:</strong> ' + projects.join(', ') + '</p>');
+                          $('#message').append('<p><strong>Status:</strong> ' + status + '</p>');
+                          $('#message').removeClass('error').addClass('success').show();
+                          searchbar.val(epic_id);
+                          searchbar.trigger('change');
+                          }, 3000);
                     } else {
                         $('#message').text("Error: " + JSON.stringify(response["errors"]));
+                        localStorage.setItem('token','');
+                        localStorage.setItem('cf_auth','');
                     }
                     $("#overlay").fadeOut();
                 },

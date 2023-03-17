@@ -24,7 +24,6 @@ products = ["Access", "Analytics", "API Gateway", "Area 1", "Argo", "Bot Managem
             "Workers", "Workers KV", "Zaraz", "Zero Trust"]
 
 
-
 def convert_custom_fields(fields):
     custom_fields = {'sales_force_id':'customfield_20323',
                 'op_id':'customfield_20324',
@@ -48,10 +47,13 @@ def make_request(cf_auth, token, method, url, payload=None, query=False):
     if not DEBUG or query:
         try:
             response = requests.request(method, url, cookies=COOKIES, headers=HEADERS, json=payload)
+            print(response)
             if "Cloudflare Access</title>" not in response.text and not "errorMessages" in response.text:
                 print('The request was successful.')
-                if response.status_code == 200:
+                if response.status_code in [200, 201, 202, 203]:
                     return response.json()
+                elif response.status_code == 204:
+                    return
             elif "errorMessages" in response.text and "anonymous users" in response.text:
                 print('The request failed')
                 return {"error": "The request failed.Please try entering your Jira API Token"}
@@ -98,8 +100,9 @@ def update_epic(cf_auth, token,epic_key,fields):
     }
     for field in fields:
         payload["update"][field] = [{"set":fields[field]}]
+    response = make_request(cf_auth, token,'PUT', url, payload, False)
+    return jsonify({'status':'success','epic_id':epic_key,'payload':fields})
 
-    return make_request(cf_auth, token,'PUT', url, payload, False)
 
 def jira_query(cf_auth, token,jql):
     url = app.config['JIRA_URL'] + '/rest/api/2/search'
@@ -126,14 +129,12 @@ def create_child_issues(cf_auth, token,epic_id, customer, sales_force_id, op_id,
                 'customfield_18408': {"value": region}
             }
         })
-        if issue["key"]:
+        if "key" in issue:
             issue_keys.append(issue["key"])
     print("Children created:" + str(issue_keys))
     response = link_issues(cf_auth, token, epic_id, payload={"issues": issue_keys})
-    if response.status_code == 204:
-        return jsonify({'status':'success','epic_id':epic_id,'projects':issue_keys})
-    else:
-        return jsonify({'status': 'failed', 'epic_id': epic_id, 'projects': issue_keys, 'message':'Not Linked'})
+    print(str(response))
+    return jsonify({'status':'success','epic_id':epic_id,'projects':issue_keys})
 
 @app.route('/get-onboards', methods=["POST"])
 def get_epics_for_project(project_key="Onboard"):
@@ -164,10 +165,11 @@ def lookup(cf_auth=None,token=None,jira_id=None):
 
     epic = get_issue(cf_auth,token,lookup)
     linked = get_epic(cf_auth,token,lookup)
-
+    #print(str(epic))
+    #print(str(linked))
     products = []
     start_date = None
-    if linked['issues']:
+    if "issues" in linked:
         for issue in linked['issues']:
             products.append(issue.get('fields', {}).get('customfield_20325', {}).get('value'))
             start_date = issue.get('fields', {}).get('customfield_11300', '')
@@ -257,9 +259,9 @@ def form_processing():
             updated_fields["region"] = region
 
         selected_products = [key for key in request.form.keys() if 'on' in request.form.getlist(key)]
-        #print("New Products " + str(selected_products))
+        print("New Products " + str(selected_products))
 
-        #print("Updated Fields " + str(updated_fields))
+        print("Updated Fields " + str(updated_fields))
 
         if len(updated_fields) > 0:
             response = update_epic(cf_auth,token,epic_id, convert_custom_fields(updated_fields))
